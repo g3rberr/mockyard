@@ -6,7 +6,7 @@ services:
     openapi: examples/orders/openapi.json
     path: /orders
     port: 8001
-    command: "uvicorn orders.app:app --port 8001"
+    command: "uvicorn examples.orders.app:app --port 8001"
 
   - name: users
     openapi: examples/users/openapi.json
