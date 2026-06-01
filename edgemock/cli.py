@@ -1,9 +1,11 @@
+import asyncio
 from pathlib import Path
 from typing import Optional
 
 import typer
 
 from edgemock.config import load_config
+from edgemock.orchestrator import run
 from edgemock.ui.console import console, print_banner
 
 main = typer.Typer(
@@ -12,7 +14,7 @@ main = typer.Typer(
 )
 
 
-def _get_config(config_path: Optional[Path]) -> None:
+def _get_config(config_path: Optional[Path]):
     path = config_path or Path("edgemock.yaml")
     if not path.exists():
         console.print(f"[red]config not found:[/red] {path.resolve()}")
@@ -35,8 +37,7 @@ def target(
         console.print(f"[red]target '{service}' doesn't match config target '{cfg.target}'[/red]")
         raise typer.Exit(1)
     print_banner()
-    console.print(f"target = {service}, gateway = :{cfg.gateway_port}")
-    console.print("[yellow]not wired yet[/yellow]")
+    asyncio.run(run(cfg))
 
 
 @main.command()
