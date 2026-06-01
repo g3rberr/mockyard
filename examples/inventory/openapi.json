@@ -1,0 +1,40 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Inventory Service", "version": "1.0.0" },
+  "paths": {
+    "/inventory": {
+      "get": {
+        "operationId": "listInventory",
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Item" } } } }
+          }
+        }
+      }
+    },
+    "/inventory/{id}": {
+      "get": {
+        "operationId": "getItem",
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ],
+        "responses": {
+          "200": { "description": "ok", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Item" } } } }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Item": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "quantity": { "type": "integer" },
+          "price": { "type": "number" }
+        },
+        "required": ["id", "name", "quantity", "price"]
+      }
+    }
+  }
+}
