@@ -77,17 +77,7 @@ def test_mock_app_get(tmp_path: Path):
 
 def test_mock_app_post_get(tmp_path: Path):
     spec = tmp_path / "s.json"
-    spec.write_text('{"openapi": "3.0.0", "info": {"title":"T","version":"1"}, '
-                    '"paths": {"/items": {"post": {"operationId":"create",'
-                    '"requestBody":{"required":true,"content":{"application/json":'
-                    '{"schema":{"type":"object","properties":{"name":{"type":"string"}}}}}},'
-                    '"responses":{"201":{"description":"ok","content":'
-                    '{"application/json":{"schema":{"type":"object"}}}}}}}},'
-                    '"/items/{id}": {"get": {"operationId":"get",'
-                    '"parameters":[{"name":"id","in":"path","required":true,'
-                    '"schema":{"type":"string"}}],'
-                    '"responses":{"200":{"description":"ok","content":'
-                    '{"application/json":{"schema":{"type":"object"}}}}}}}}}}')
+    spec.write_text("""{"openapi":"3.0.0","info":{"title":"T","version":"1"},"paths":{"/items":{"post":{"operationId":"create","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"name":{"type":"string"}}}}}},"responses":{"201":{"description":"ok","content":{"application/json":{"schema":{"type":"object"}}}}}},"/items/{id}":{"get":{"operationId":"get","parameters":[{"name":"id","in":"path","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"ok","content":{"application/json":{"schema":{"type":"object"}}}}}}}}}}""")
     app = build(spec)
     client = TestClient(app)
     resp = client.post("/items", json={"name": "hello"})
