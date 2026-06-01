@@ -70,7 +70,7 @@ def _make_handler(method: str, path: str, op: dict, components: dict):
 
             case "POST":
                 body = await request.json()
-                new_id = str(hash(str(body)))
+                new_id = str(hash(str(body)))  # XXX: hash is randomized per process, should use uuid
                 _store.put(col, new_id, body)
                 return JSONResponse(body, status_code=201)
 
