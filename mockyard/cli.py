@@ -14,8 +14,12 @@ main = typer.Typer(name="mockyard", no_args_is_help=True)
 def _get_config(config_path: Optional[Path]):
     path = config_path or Path("mockyard.yaml")
     if not path.exists():
-        logger.error(f"config not found: {path.resolve()}")
-        raise typer.Exit(1)
+        alt = Path("examples/mockyard.yaml")
+        if alt.exists():
+            path = alt
+        else:
+            logger.error(f"config not found: {path.resolve()}")
+            raise typer.Exit(1)
     try:
         return load_config(path)
     except (ValueError, FileNotFoundError) as e:

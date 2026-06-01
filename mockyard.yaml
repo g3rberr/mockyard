@@ -1,0 +1,19 @@
+gateway_port: 8000
+target: orders
+
+services:
+  - name: orders
+    openapi: examples/orders/openapi.json
+    path: /orders
+    port: 8001
+    command: "uvicorn orders.app:app --port 8001"
+
+  - name: users
+    openapi: examples/users/openapi.json
+    path: /users
+    port: 8002
+
+  - name: inventory
+    openapi: examples/inventory/openapi.json
+    path: /inventory
+    port: 8003
