@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from edgemock.mock.schema import generate
 from edgemock.mock.store import Store
 
+_store = Store()
 
 def _load(path: Path) -> dict:
     spec = json.loads(path.read_text())
@@ -46,8 +47,6 @@ def _make_handler(method: str, path: str, op: dict, components: dict):
         rb_json = rb_content.get("application/json", {})
         body_schema = rb_json.get("schema")
 
-    store = Store()
-
     async def handler(request: Request) -> Response:
         path_id = None
         if m := re.search(r"/([^/]+)$", path):
@@ -58,11 +57,11 @@ def _make_handler(method: str, path: str, op: dict, components: dict):
         match method.upper():
             case "GET":
                 if path_id:
-                    item = store.get(col, path_id)
+                    item = _store.get(col, path_id)
                     if item is not None:
                         return JSONResponse(item)
                 else:
-                    items = store.list(col)
+                    items = _store.list(col)
                     if items:
                         return JSONResponse(items)
                 if resp_schema:
@@ -72,18 +71,18 @@ def _make_handler(method: str, path: str, op: dict, components: dict):
             case "POST":
                 body = await request.json()
                 new_id = str(hash(str(body)))
-                store.put(col, new_id, body)
+                _store.put(col, new_id, body)
                 return JSONResponse(body, status_code=201)
 
             case "PUT":
                 body = await request.json()
                 if path_id:
-                    store.put(col, path_id, body)
+                    _store.put(col, path_id, body)
                 return JSONResponse(body)
 
             case "DELETE":
                 if path_id:
-                    store.delete(col, path_id)
+                    _store.delete(col, path_id)
                 return Response(status_code=204)
 
             case _:
