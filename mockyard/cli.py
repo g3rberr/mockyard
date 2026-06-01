@@ -4,15 +4,15 @@ from typing import Optional
 
 import typer
 
-from edgemock.config import load_config
-from edgemock.orchestrator import run
-from edgemock.ui.console import logger, print_banner
+from mockyard.config import load_config
+from mockyard.orchestrator import run
+from mockyard.ui.console import logger, print_banner
 
-main = typer.Typer(name="edge-mock", no_args_is_help=True)
+main = typer.Typer(name="mockyard", no_args_is_help=True)
 
 
 def _get_config(config_path: Optional[Path]):
-    path = config_path or Path("edgemock.yaml")
+    path = config_path or Path("mockyard.yaml")
     if not path.exists():
         logger.error(f"config not found: {path.resolve()}")
         raise typer.Exit(1)

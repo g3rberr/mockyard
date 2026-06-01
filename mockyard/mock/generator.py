@@ -7,8 +7,8 @@ from typing import Any
 from fastapi import APIRouter, FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
-from edgemock.mock.schema import generate
-from edgemock.mock.store import Store
+from mockyard.mock.schema import generate
+from mockyard.mock.store import Store
 
 # global in-memory store for mock data
 _store = Store()

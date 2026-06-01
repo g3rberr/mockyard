@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-_SESSION_DIR = Path.home() / ".edgemock" / "sessions"
+_SESSION_DIR = Path.home() / ".mockyard" / "sessions"
 
 
 class Recorder:

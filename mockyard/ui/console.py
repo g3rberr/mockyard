@@ -1,11 +1,10 @@
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-logger = logging.getLogger("edge-mock")
-
+logger = logging.getLogger("mockyard")
 
 def print_banner():
-    logger.info(f"edge-mock — microservice mock environment")
+    logger.info(f"mockyard — microservice mock environment")
 
 
 def print_violation(service: str, method: str, path: str, detail: str):

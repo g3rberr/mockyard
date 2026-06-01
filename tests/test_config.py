@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from edgemock.config import EdgeMockConfig, ServiceConfig, load_config
+from mockyard.config import EdgeMockConfig, ServiceConfig, load_config
 
 
 def test_valid_config(tmp_path: Path):
@@ -65,7 +65,7 @@ def test_target_not_found(tmp_path: Path):
 def test_load_from_yaml(tmp_path: Path):
     api = tmp_path / "api.json"
     api.write_text('{"openapi": "3.0.0", "info": {"title": "T", "version": "1"}, "paths": {}}')
-    cfg_file = tmp_path / "edgemock.yaml"
+    cfg_file = tmp_path / "mockyard.yaml"
     cfg_file.write_text(yaml.dump({
         "gateway_port": 9000,
         "target": "x",
@@ -78,7 +78,7 @@ def test_load_from_yaml(tmp_path: Path):
 
 
 def test_missing_openapi_file(tmp_path: Path):
-    cfg_file = tmp_path / "edgemock.yaml"
+    cfg_file = tmp_path / "mockyard.yaml"
     cfg_file.write_text(yaml.dump({
         "target": "x",
         "services": [{"name": "x", "openapi": "/does/not/exist.json", "path": "/x", "port": 8001}],

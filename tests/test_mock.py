@@ -2,9 +2,9 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from edgemock.mock.schema import generate
-from edgemock.mock.generator import build
-from edgemock.mock.store import Store
+from mockyard.mock.schema import generate
+from mockyard.mock.generator import build
+from mockyard.mock.store import Store
 
 
 def test_fake_types():

@@ -6,10 +6,10 @@ from pathlib import Path
 import uvicorn
 from watchfiles import awatch
 
-from edgemock.config import EdgeMockConfig
-from edgemock.gateway.app import build_gateway
-from edgemock.mock.generator import build
-from edgemock.ui.console import logger
+from mockyard.config import EdgeMockConfig
+from mockyard.gateway.app import build_gateway
+from mockyard.mock.generator import build
+from mockyard.ui.console import logger
 
 _procs = []
 _servers = []

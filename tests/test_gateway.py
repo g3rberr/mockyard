@@ -2,9 +2,9 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from edgemock.gateway.app import build_gateway
-from edgemock.config import ServiceConfig
-from edgemock.gateway.validator import check_request, check_response
+from mockyard.gateway.app import build_gateway
+from mockyard.config import ServiceConfig
+from mockyard.gateway.validator import check_request, check_response
 
 USERS_SPEC = {
     "openapi": "3.0.0",

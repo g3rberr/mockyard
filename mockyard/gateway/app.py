@@ -6,10 +6,10 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 import httpx
 
-from edgemock.config import ServiceConfig
-from edgemock.gateway.validator import check_request, check_response
-from edgemock.gateway.recorder import Recorder
-from edgemock.ui.console import print_violation
+from mockyard.config import ServiceConfig
+from mockyard.gateway.validator import check_request, check_response
+from mockyard.gateway.recorder import Recorder
+from mockyard.ui.console import print_violation
 
 
 @asynccontextmanager
@@ -22,7 +22,7 @@ async def _lifespan(app: FastAPI):
 
 
 def build_gateway(services: list[ServiceConfig], specs: dict[str, dict], recorder: Recorder | None = None) -> FastAPI:
-    app = FastAPI(title="edge-mock gateway", version="0.1.0", lifespan=_lifespan)
+    app = FastAPI(title="mockyard gateway", version="0.1.0", lifespan=_lifespan)
 
     by_prefix = {}
     for svc in services:

@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "edge-mock"
+name = "mockyard"
 version = "0.1.0"
 description = "mock your microservice dependencies locally"
 requires-python = ">=3.11"
@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.scripts]
-edge-mock = "edgemock.cli:main"
+mockyard = "mockyard.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["edgemock"]
+packages = ["mockyard"]
