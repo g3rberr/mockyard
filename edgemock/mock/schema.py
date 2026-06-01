@@ -30,38 +30,43 @@ def _gen_value(schema: dict, components: dict, eid: str) -> Any:
     if enum_vals:
         return enum_vals[0]
 
-    match schema.get("type"):
-        case "string":
-            f = _seeded_faker(eid)
-            match fmt:
-                case "uuid":       return str(f.uuid4())
-                case "email":      return f.email()
-                case "date-time":  return f.iso8601()
-                case "date":       return f.date()
-                case "uri":        return f.url()
-                case _:            return f.name()
-        case "integer":
-            f = _seeded_faker(eid)
-            lo = schema.get("minimum")
-            hi = schema.get("maximum")
-            if lo is not None and hi is not None:
-                return f.pyint(min_value=lo, max_value=hi)
-            return f.pyint(min_value=0, max_value=999)
-        case "number":
-            f = _seeded_faker(eid)
-            return round(f.pyfloat(min_value=0, max_value=999), 2)
-        case "boolean":
-            return True
-        case "array":
-            items = schema.get("items", {})
-            return [_gen_value(items, components, f"{eid}[0]")]
-        case "object":
-            result = {}
-            for name, prop in schema.get("properties", {}).items():
-                result[name] = _gen_value(prop, components, f"{eid}.{name}")
-            return result
-        case _:
-            return None
+    stype = schema.get("type")
+    if stype == "string":
+        f = _seeded_faker(eid)
+        if fmt == "uuid":
+            return str(f.uuid4())
+        elif fmt == "email":
+            return f.email()
+        elif fmt == "date-time":
+            return f.iso8601()
+        elif fmt == "date":
+            return f.date()
+        elif fmt == "uri":
+            return f.url()
+        else:
+            return f.name()
+    elif stype == "integer":
+        f = _seeded_faker(eid)
+        lo = schema.get("minimum")
+        hi = schema.get("maximum")
+        if lo is not None and hi is not None:
+            return f.pyint(min_value=lo, max_value=hi)
+        return f.pyint(min_value=0, max_value=999)
+    elif stype == "number":
+        f = _seeded_faker(eid)
+        return round(f.pyfloat(min_value=0, max_value=999), 2)
+    elif stype == "boolean":
+        return True
+    elif stype == "array":
+        items = schema.get("items", {})
+        return [_gen_value(items, components, f"{eid}[0]")]
+    elif stype == "object":
+        result = {}
+        for name, prop in schema.get("properties", {}).items():
+            result[name] = _gen_value(prop, components, f"{eid}.{name}")
+        return result
+    else:
+        return None
 
 
 def generate(schema: dict, components: dict | None = None, entity_id: str = "root") -> Any:

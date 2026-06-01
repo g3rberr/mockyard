@@ -54,39 +54,39 @@ def _make_handler(method: str, path: str, op: dict, components: dict):
             if candidate:
                 path_id = str(candidate)
 
-        match method.upper():
-            case "GET":
-                if path_id:
-                    item = _store.get(col, path_id)
-                    if item is not None:
-                        return JSONResponse(item)
-                else:
-                    items = _store.list(col)
-                    if items:
-                        return JSONResponse(items)
-                if resp_schema:
-                    return JSONResponse(generate(resp_schema, components, f"{col}.{path_id or 'list'}"))
-                return JSONResponse([])
+        method_upper = method.upper()
+        if method_upper == "GET":
+            if path_id:
+                item = _store.get(col, path_id)
+                if item is not None:
+                    return JSONResponse(item)
+            else:
+                items = _store.list(col)
+                if items:
+                    return JSONResponse(items)
+            if resp_schema:
+                return JSONResponse(generate(resp_schema, components, f"{col}.{path_id or 'list'}"))
+            return JSONResponse([])
 
-            case "POST":
-                body = await request.json()
-                new_id = str(hash(str(body)))  # XXX: hash is randomized per process, should use uuid
-                _store.put(col, new_id, body)
-                return JSONResponse(body, status_code=201)
+        elif method_upper == "POST":
+            body = await request.json()
+            new_id = str(hash(str(body)))  # XXX: hash is randomized per process, should use uuid
+            _store.put(col, new_id, body)
+            return JSONResponse(body, status_code=201)
 
-            case "PUT":
-                body = await request.json()
-                if path_id:
-                    _store.put(col, path_id, body)
-                return JSONResponse(body)
+        elif method_upper == "PUT":
+            body = await request.json()
+            if path_id:
+                _store.put(col, path_id, body)
+            return JSONResponse(body)
 
-            case "DELETE":
-                if path_id:
-                    _store.delete(col, path_id)
-                return Response(status_code=204)
+        elif method_upper == "DELETE":
+            if path_id:
+                _store.delete(col, path_id)
+            return Response(status_code=204)
 
-            case _:
-                return JSONResponse({"error": "unsupported"}, status_code=405)
+        else:
+            return JSONResponse({"error": "unsupported"}, status_code=405)
 
     return handler
 

@@ -69,14 +69,13 @@ def _find_operation(method: str, path: str, spec: dict):
 def _type_check(value: str, schema: dict) -> str | None:
     t = schema.get("type")
     try:
-        match t:
-            case "integer":
-                int(value)
-            case "number":
-                float(value)
-            case "boolean":
-                if value.lower() not in ("true", "false", "1", "0"):
-                    raise ValueError
+        if t == "integer":
+            int(value)
+        elif t == "number":
+            float(value)
+        elif t == "boolean":
+            if value.lower() not in ("true", "false", "1", "0"):
+                raise ValueError
         return None
     except (ValueError, TypeError):
         return f"expected {t}, got '{value}'"
