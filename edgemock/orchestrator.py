@@ -57,6 +57,7 @@ async def _watch(paths: set[Path]):
                 continue
             for name, app in list(_mock_apps.items()):
                 logger.warning("♻ %s openapi changed, rebuilding", name)
+                # FIXME: actually rebuild the mock app and hot-reload uvicorn
 
 
 async def run(cfg: EdgeMockConfig):
