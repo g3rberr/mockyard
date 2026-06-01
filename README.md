@@ -43,7 +43,10 @@ curl http://localhost:8000/inventory     # auto-mocked inventory
 
 ## Your Own Config
 
+Create `mockyard.yaml` in your project root:
+
 ```yaml
+# change paths and ports to match your project
 gateway_port: 8000
 target: users
 
@@ -62,7 +65,7 @@ services:
 
 Run with: `mockyard target users`
 
-If a config isn't found in the current directory, `mockyard` falls back to `examples/mockyard.yaml`.
+See `examples/mockyard.yaml` for a working reference — adjust paths, ports and service names to your setup.
 
 ## CLI
 
@@ -113,4 +116,4 @@ tests/
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).

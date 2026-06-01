@@ -1,3 +1,4 @@
+# copy this file and change paths/ports/services to your setup
 gateway_port: 8000
 target: orders
 
