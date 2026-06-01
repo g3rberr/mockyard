@@ -8,7 +8,7 @@ import httpx
 from edgemock.config import ServiceConfig
 from edgemock.gateway.validator import check_request, check_response
 from edgemock.gateway.recorder import Recorder
-from edgemock.ui.console import console, print_violation
+from edgemock.ui.console import print_violation
 
 
 def build_gateway(services: list[ServiceConfig], specs: dict[str, dict], recorder: Recorder | None = None) -> FastAPI:

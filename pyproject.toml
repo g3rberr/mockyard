@@ -22,3 +22,6 @@ dependencies = [
 
 [project.scripts]
 edge-mock = "edgemock.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["edgemock"]

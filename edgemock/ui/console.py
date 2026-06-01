@@ -1,35 +1,18 @@
-from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
-from rich.text import Text
+import logging
 
-console = Console()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+logger = logging.getLogger("edge-mock")
 
 
 def print_banner():
-    console.print(
-        Panel.fit(
-            "[bold cyan]edge-mock[/bold cyan] — microservice mock environment",
-            border_style="cyan",
-        )
-    )
+    logger.info("edge-mock \u2014 microservice mock environment")
 
 
 def print_violation(service: str, method: str, path: str, detail: str):
-    msg = Text()
-    msg.append("[VIOLATION] ", style="bold red")
-    msg.append(f"{service} ", style="yellow")
-    msg.append(f"{method} {path}: ", style="dim")
-    msg.append(detail)
-    console.print(msg)
+    logger.warning("[VIOLATION] %s %s %s: %s", service, method, path, detail)
 
 
 def print_service_table(services: list[dict]):
-    table = Table(header_style="bold magenta")
-    table.add_column("name", style="cyan")
-    table.add_column("port", justify="right")
-    table.add_column("path")
-    table.add_column("type", style="yellow")
+    logger.info("services:")
     for s in services:
-        table.add_row(s["name"], str(s["port"]), s["path"], s["type"])
-    console.print(table)
+        logger.info("  %s :%s %s (%s)", s["name"], s["port"], s["path"], s["type"])

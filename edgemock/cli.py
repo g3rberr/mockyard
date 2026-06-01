@@ -6,7 +6,7 @@ import typer
 
 from edgemock.config import load_config
 from edgemock.orchestrator import run
-from edgemock.ui.console import console, print_banner
+from edgemock.ui.console import logger, print_banner
 
 main = typer.Typer(name="edge-mock", no_args_is_help=True)
 
@@ -14,12 +14,12 @@ main = typer.Typer(name="edge-mock", no_args_is_help=True)
 def _get_config(config_path: Optional[Path]):
     path = config_path or Path("edgemock.yaml")
     if not path.exists():
-        console.print(f"[red]config not found:[/red] {path.resolve()}")
+        logger.error("config not found: %s", path.resolve())
         raise typer.Exit(1)
     try:
         return load_config(path)
     except (ValueError, FileNotFoundError) as e:
-        console.print(f"[red]config error:[/red] {e}")
+        logger.error("config error: %s", e)
         raise typer.Exit(1)
 
 
@@ -30,7 +30,7 @@ def target(
 ):
     cfg = _get_config(config)
     if cfg.target != service:
-        console.print(f"[red]target '{service}' doesn't match config target '{cfg.target}'[/red]")
+        logger.error("target '%s' doesn't match config target '%s'", service, cfg.target)
         raise typer.Exit(1)
     print_banner()
     asyncio.run(run(cfg))
@@ -41,10 +41,10 @@ def validate(
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ):
     cfg = _get_config(config)
-    console.print("[green]ok[/green]")
+    logger.info("ok")
     for svc in cfg.services:
         label = "target" if svc.name == cfg.target else "mock"
-        console.print(f"  {svc.name} :{svc.port} ({label})")
+        logger.info("  %s :%s (%s)", svc.name, svc.port, label)
 
 
 @main.command()
@@ -53,7 +53,7 @@ def record(
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ):
     _get_config(config)
-    console.print(f"[yellow]recording '{session}' — todo[/yellow]")
+    logger.warning("recording '%s' — todo", session)
 
 
 @main.command()
@@ -62,7 +62,7 @@ def replay(
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ):
     _get_config(config)
-    console.print(f"[yellow]replaying '{session}' — todo[/yellow]")
+    logger.warning("replaying '%s' — todo", session)
 
 
 @main.command()
@@ -73,7 +73,7 @@ def status(
     print_banner()
     for svc in cfg.services:
         kind = "target" if svc.name == cfg.target else "mock"
-        console.print(f"  {svc.name} :{svc.port} ({kind})")
+        logger.info("  %s :%s (%s)", svc.name, svc.port, kind)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ from watchfiles import awatch
 from edgemock.config import EdgeMockConfig
 from edgemock.gateway.app import build_gateway
 from edgemock.mock.generator import build
-from edgemock.ui.console import console
+from edgemock.ui.console import logger
 
 _procs = []
 _servers = []
@@ -17,7 +17,7 @@ _mock_apps = {}
 
 
 async def start_real(name: str, command: str):
-    console.print(f"[bold]starting {name}:[/bold] {command}")
+    logger.info("starting %s: %s", name, command)
     proc = await asyncio.create_subprocess_shell(
         command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
     )
@@ -31,12 +31,12 @@ async def start_mock(name: str, openapi_path: str, port: int):
     config = uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning")
     server = uvicorn.Server(config)
     _servers.append(server)
-    console.print(f"[yellow]{name}: mock on :{port}[/yellow]")
+    logger.info("%s: mock on :%s", name, port)
     await server.serve()
 
 
 async def shutdown():
-    console.print("\n[yellow]shutting down...[/yellow]")
+    logger.warning("shutting down...")
     for s in _servers:
         s.should_exit = True
     for p in _procs:
@@ -56,7 +56,7 @@ async def _watch(paths: set[Path]):
             if cp not in paths:
                 continue
             for name, app in list(_mock_apps.items()):
-                console.print(f"[yellow]♻ {name} openapi changed, rebuilding[/yellow]")
+                logger.warning("♻ %s openapi changed, rebuilding", name)
 
 
 async def run(cfg: EdgeMockConfig):
@@ -84,7 +84,7 @@ async def run(cfg: EdgeMockConfig):
     tasks.append(asyncio.create_task(gw_server.serve()))
     tasks.append(asyncio.create_task(_watch({Path(s.openapi) for s in cfg.services if s.name != cfg.target})))
 
-    console.print(f"[cyan]gateway on http://127.0.0.1:{cfg.gateway_port}[/cyan]")
+    logger.info("gateway on http://127.0.0.1:%s", cfg.gateway_port)
 
     try:
         await stop.wait()
