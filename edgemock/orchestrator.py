@@ -1,24 +1,25 @@
 import asyncio
+import json
 import signal
 from pathlib import Path
-from typing import Any
 
 import uvicorn
+from watchfiles import awatch
 
 from edgemock.config import EdgeMockConfig
+from edgemock.gateway.app import build_gateway
 from edgemock.mock.generator import build
 from edgemock.ui.console import console
 
-_procs: list[asyncio.subprocess.Process] = []
-_servers: list[uvicorn.Server] = []
+_procs = []
+_servers = []
+_mock_apps = {}
 
 
-async def start_real(name: str, command: str) -> asyncio.subprocess.Process | None:
+async def start_real(name: str, command: str):
     console.print(f"[bold]starting {name}:[/bold] {command}")
     proc = await asyncio.create_subprocess_shell(
-        command,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
+        command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
     )
     _procs.append(proc)
     return proc
@@ -26,6 +27,7 @@ async def start_real(name: str, command: str) -> asyncio.subprocess.Process | No
 
 async def start_mock(name: str, openapi_path: str, port: int):
     app = build(Path(openapi_path))
+    _mock_apps[name] = app
     config = uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning")
     server = uvicorn.Server(config)
     _servers.append(server)
@@ -47,11 +49,30 @@ async def shutdown():
                 await p.wait()
 
 
+async def _watch(paths: set[Path]):
+    async for changes in awatch(*[p.parent for p in paths]):
+        for _, changed in changes:
+            cp = Path(changed)
+            if cp not in paths:
+                continue
+            for name, app in list(_mock_apps.items()):
+                console.print(f"[yellow]♻ {name} openapi changed, rebuilding[/yellow]")
+
+
 async def run(cfg: EdgeMockConfig):
     loop = asyncio.get_event_loop()
     stop = asyncio.Event()
     for sig in (signal.SIGINT, signal.SIGTERM):
         loop.add_signal_handler(sig, stop.set)
+
+    specs = {}
+    for svc in cfg.services:
+        specs[svc.name] = json.loads(Path(svc.openapi).read_text())
+
+    gateway_app = build_gateway(cfg.services, specs)
+    gw_config = uvicorn.Config(gateway_app, host="127.0.0.1", port=cfg.gateway_port, log_level="warning")
+    gw_server = uvicorn.Server(gw_config)
+    _servers.append(gw_server)
 
     tasks = []
     for svc in cfg.services:
@@ -60,7 +81,10 @@ async def run(cfg: EdgeMockConfig):
         elif svc.name != cfg.target:
             tasks.append(asyncio.create_task(start_mock(svc.name, svc.openapi, svc.port)))
 
-    console.print(f"[cyan]gateway would be on :{cfg.gateway_port}[/cyan]")
+    tasks.append(asyncio.create_task(gw_server.serve()))
+    tasks.append(asyncio.create_task(_watch({Path(s.openapi) for s in cfg.services if s.name != cfg.target})))
+
+    console.print(f"[cyan]gateway on http://127.0.0.1:{cfg.gateway_port}[/cyan]")
 
     try:
         await stop.wait()

@@ -8,10 +8,7 @@ from edgemock.config import load_config
 from edgemock.orchestrator import run
 from edgemock.ui.console import console, print_banner
 
-main = typer.Typer(
-    name="edge-mock",
-    no_args_is_help=True,
-)
+main = typer.Typer(name="edge-mock", no_args_is_help=True)
 
 
 def _get_config(config_path: Optional[Path]):
@@ -31,7 +28,6 @@ def target(
     service: str,
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ):
-    """Run one real service, mock the rest."""
     cfg = _get_config(config)
     if cfg.target != service:
         console.print(f"[red]target '{service}' doesn't match config target '{cfg.target}'[/red]")
@@ -44,7 +40,6 @@ def target(
 def validate(
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ):
-    """Check that config is correct."""
     cfg = _get_config(config)
     console.print("[green]ok[/green]")
     for svc in cfg.services:
@@ -57,7 +52,6 @@ def record(
     session: str,
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ):
-    """Record traffic to a session file."""
     _get_config(config)
     console.print(f"[yellow]recording '{session}' — todo[/yellow]")
 
@@ -67,7 +61,6 @@ def replay(
     session: str,
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ):
-    """Replay recorded traffic."""
     _get_config(config)
     console.print(f"[yellow]replaying '{session}' — todo[/yellow]")
 
@@ -76,7 +69,6 @@ def replay(
 def status(
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ):
-    """Show what's running."""
     cfg = _get_config(config)
     print_banner()
     for svc in cfg.services:
