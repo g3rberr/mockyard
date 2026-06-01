@@ -67,8 +67,8 @@ async def run(cfg: EdgeMockConfig):
         loop.add_signal_handler(sig, stop.set)
 
     specs = {}
-    for svc in cfg.services:
-        specs[svc.name] = json.loads(Path(svc.openapi).read_text())
+    for service in cfg.services:
+        specs[service.name] = json.loads(Path(service.openapi).read_text())
 
     gateway_app = build_gateway(cfg.services, specs)
     gw_config = uvicorn.Config(gateway_app, host="127.0.0.1", port=cfg.gateway_port, log_level="warning")
