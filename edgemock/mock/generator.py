@@ -1,5 +1,6 @@
 import json
 import re
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -9,9 +10,12 @@ from fastapi.responses import JSONResponse
 from edgemock.mock.schema import generate
 from edgemock.mock.store import Store
 
+# global in-memory store for mock data
 _store = Store()
 
+
 def _load(path: Path) -> dict:
+    """load & validate openapi spec. returns parsed dict."""
     spec = json.loads(path.read_text())
     if not isinstance(spec, dict) or "paths" not in spec:
         raise ValueError(f"invalid openapi: no paths in {path}")
@@ -19,15 +23,18 @@ def _load(path: Path) -> dict:
 
 
 def _convert_path(url: str) -> str:
+    """/users/{id} -> /users/{id} (fastapi-compatible path)."""
     return re.sub(r"\{(\w+)\}", r"{\1}", url)
 
 
 def _collection_from(path: str) -> str:
+    """extract collection name from first non-param path segment."""
     parts = [p for p in path.strip("/").split("/") if p and not p.startswith("{")]
     return parts[0] if parts else "default"
 
 
 def _make_handler(method: str, path: str, op: dict, components: dict):
+    """factory: returns an async handler for a given endpoint definition."""
     col = _collection_from(path)
 
     # grab response schema
@@ -70,7 +77,7 @@ def _make_handler(method: str, path: str, op: dict, components: dict):
 
         elif method_upper == "POST":
             body = await request.json()
-            new_id = str(hash(str(body)))  # XXX: hash is randomized per process, should use uuid
+            new_id = uuid.uuid4().hex[:12]
             _store.put(col, new_id, body)
             return JSONResponse(body, status_code=201)
 
@@ -92,6 +99,7 @@ def _make_handler(method: str, path: str, op: dict, components: dict):
 
 
 def build(openapi_path: Path) -> FastAPI:
+    """build a mock FastAPI app from an openapi spec file."""
     spec = _load(openapi_path)
     components = spec.get("components", {})
     info = spec.get("info", {})

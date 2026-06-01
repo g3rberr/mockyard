@@ -4,24 +4,25 @@ from typing import Any
 from faker import Faker
 
 
-def _seeded_faker(entity_id: str) -> Faker:
+def _seeded_faker(entity_id):
+    """deterministic faker instance per entity id."""
     seed = int(hashlib.sha256(entity_id.encode()).hexdigest()[:8], 16)
     f = Faker()
     f.seed_instance(seed)
     return f
 
 
-def _resolve(schema: dict, ref: str, components: dict) -> dict:
+def _resolve(schema, ref, components):
     if ref.startswith("#/components/schemas/"):
         name = ref.split("/")[-1]
         resolved = components.get("schemas", {}).get(name)
         if not resolved:
-            raise ValueError(f"schema '{name}' not found")
+            raise ValueError("schema '%s' not found" % name)
         return resolved
-    raise ValueError(f"cant resolve {ref}")
+    raise ValueError("cant resolve %s" % ref)
 
 
-def _gen_value(schema: dict, components: dict, eid: str) -> Any:
+def _gen_value(schema, components, eid):
     if "$ref" in schema:
         schema = _resolve(schema, schema["$ref"], components)
 
@@ -59,15 +60,16 @@ def _gen_value(schema: dict, components: dict, eid: str) -> Any:
         return True
     elif stype == "array":
         items = schema.get("items", {})
-        return [_gen_value(items, components, f"{eid}[0]")]
+        return [_gen_value(items, components, "%s[0]" % eid)]
     elif stype == "object":
         result = {}
         for name, prop in schema.get("properties", {}).items():
-            result[name] = _gen_value(prop, components, f"{eid}.{name}")
+            result[name] = _gen_value(prop, components, "%s.%s" % (eid, name))
         return result
     else:
         return None
 
 
-def generate(schema: dict, components: dict | None = None, entity_id: str = "root") -> Any:
+def generate(schema, components=None, entity_id="root"):
+    """generate fake data from a json schema definition."""
     return _gen_value(schema, components or {}, entity_id)

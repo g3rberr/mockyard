@@ -14,7 +14,7 @@ main = typer.Typer(name="edge-mock", no_args_is_help=True)
 def _get_config(config_path: Optional[Path]):
     path = config_path or Path("edgemock.yaml")
     if not path.exists():
-        logger.error("config not found: %s", path.resolve())
+        logger.error(f"config not found: {path.resolve()}")
         raise typer.Exit(1)
     try:
         return load_config(path)
@@ -30,7 +30,7 @@ def target(
 ):
     cfg = _get_config(config)
     if cfg.target != service:
-        logger.error("target '%s' doesn't match config target '%s'", service, cfg.target)
+        logger.error(f"target '{service}' doesn't match config target '{cfg.target}'")
         raise typer.Exit(1)
     print_banner()
     asyncio.run(run(cfg))
@@ -44,7 +44,7 @@ def validate(
     logger.info("ok")
     for svc in cfg.services:
         label = "target" if svc.name == cfg.target else "mock"
-        logger.info("  %s :%s (%s)", svc.name, svc.port, label)
+        logger.info(f"  {svc.name} :{svc.port} ({label})")
 
 
 @main.command()
@@ -53,7 +53,7 @@ def record(
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ):
     _get_config(config)
-    logger.warning("recording '%s' — todo", session)
+    logger.warning(f"recording '{session}' — todo")
 
 
 @main.command()
@@ -62,7 +62,7 @@ def replay(
     config: Optional[Path] = typer.Option(None, "--config", "-c"),
 ):
     _get_config(config)
-    logger.warning("replaying '%s' — todo", session)
+    logger.warning(f"replaying '{session}' — todo")
 
 
 @main.command()
@@ -73,7 +73,7 @@ def status(
     print_banner()
     for svc in cfg.services:
         kind = "target" if svc.name == cfg.target else "mock"
-        logger.info("  %s :%s (%s)", svc.name, svc.port, kind)
+        logger.info(f"  {svc.name} :{svc.port} ({kind})")
 
 
 if __name__ == "__main__":

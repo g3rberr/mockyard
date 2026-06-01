@@ -81,19 +81,26 @@ def _type_check(value: str, schema: dict) -> str | None:
         return f"expected {t}, got '{value}'"
 
 
-def _resolve_refs(schema: dict, components: dict) -> dict:
+def _resolve_refs(schema: dict, components: dict, seen: set | None = None) -> dict:
+    """resolve $ref recursively with cycle detection."""
+    seen = seen or set()
     if "$ref" in schema:
         ref = schema["$ref"]
+        if ref in seen:
+            return {"$ref": ref, "error": "circular ref"}
+        seen.add(ref)
         if ref.startswith("#/components/schemas/"):
             name = ref.split("/")[-1]
             resolved = components.get("schemas", {}).get(name, {})
-            return _resolve_refs(resolved, components)
+            if not resolved:
+                return {"$ref": ref, "error": f"schema '{name}' not found"}
+            return _resolve_refs(resolved, components, seen)
     result = {}
     for k, v in schema.items():
         if isinstance(v, dict):
-            result[k] = _resolve_refs(v, components)
+            result[k] = _resolve_refs(v, components, seen)
         elif isinstance(v, list):
-            result[k] = [_resolve_refs(i, components) if isinstance(i, dict) else i for i in v]
+            result[k] = [_resolve_refs(i, components, seen) if isinstance(i, dict) else i for i in v]
         else:
             result[k] = v
     return result

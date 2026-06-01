@@ -82,10 +82,13 @@ def test_response_missing_field():
     assert len(v) > 0
 
 
-def test_gateway_returns_502_on_unreachable(tmp_path: Path):
+def test_gateway_handler(tmp_path: Path):
     api = tmp_path / "api.json"
     api.write_text('{"openapi": "3.0.0", "info": {"title":"T","version":"1"}, "paths": {}}')
     svc = ServiceConfig(name="users", openapi=str(api), path="/users", port=9999)
     gw = build_gateway([svc], {"users": USERS_SPEC})
-    client = TestClient(gw)
-    assert client.get("/users").status_code == 502
+    with TestClient(gw) as client:
+        # unreachable backend -> 502
+        assert client.get("/users").status_code == 502
+        # bad path -> 502 too (no matching service)
+        assert client.get("/nonexistent").status_code == 502

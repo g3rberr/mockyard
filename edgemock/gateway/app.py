@@ -1,4 +1,5 @@
 import json
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, Request, Response
@@ -11,9 +12,17 @@ from edgemock.gateway.recorder import Recorder
 from edgemock.ui.console import print_violation
 
 
-def build_gateway(services: list[ServiceConfig], specs: dict[str, dict], recorder: Recorder | None = None) -> FastAPI:
-    app = FastAPI(title="edge-mock gateway", version="0.1.0")
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    """create & tear down the shared httpx client."""
     client = httpx.AsyncClient()
+    app.state.client = client
+    yield
+    await client.aclose()
+
+
+def build_gateway(services: list[ServiceConfig], specs: dict[str, dict], recorder: Recorder | None = None) -> FastAPI:
+    app = FastAPI(title="edge-mock gateway", version="0.1.0", lifespan=_lifespan)
 
     by_prefix = {}
     for svc in services:
@@ -44,6 +53,7 @@ def build_gateway(services: list[ServiceConfig], specs: dict[str, dict], recorde
 
         headers = dict(request.headers)
         headers.pop("host", None)
+        client: httpx.AsyncClient = app.state.client
         try:
             resp = await client.request(method, target, headers=headers, content=body_bytes,
                                         params=request.query_params, timeout=30.0)
